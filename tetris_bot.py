@@ -529,5 +529,5 @@ async def on_reaction_add(reaction, user):
 
 
 client.run(
-  'MTEwOTgzNzE5NjU3MzI5NDY4Ng.G3xvGo.lsktqYqFo26KOGboN3fshCht-X_luNPsEdwNVM')
+  'Discord Token Here.')
 import os
