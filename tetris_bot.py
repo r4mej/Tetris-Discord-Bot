@@ -1,14 +1,14 @@
-#Known bugs:
-#After first round of playing, some of the shapes will always start higher
-#ROTATING SHAPE WHEN AT TOP OF GAME BOARD
-#ROTATING SHAPES TOO QUICK MAKES THEM DO WALL BOUNCE
-#PRESSING DOWN AND LEFT/RIGHT AT SAME TIME DOESNT MOVE IT LEFT/RIGHT
-
 import discord
 from discord.ext import commands
 import random
 import asyncio
+import os
 
+intents = discord.Intents.default()
+intents.typing = False
+intents.presences = False
+intents.message_content = True
+DC_TOKEN = os.getenv('TOKEN')
 board = []
 num_of_rows = 18
 num_of_cols = 10
@@ -31,10 +31,6 @@ is_new_shape = False
 start_higher = False  #for when near top of board
 game_over = False
 index = 0
-intents = discord.Intents.default()
-intents.typing = False
-intents.presences = False
-intents.message_content = True
 
 
 class Tetronimo:  #Tetris pieces
@@ -334,7 +330,6 @@ def get_next_pos(cur_shape_pos):
 
   return [movement_amnt, next_space_free]
 
-
 async def run_game(msg, cur_shape):
   global is_new_shape
   global h_movement
@@ -410,6 +405,7 @@ async def run_game(msg, cur_shape):
     await msg.remove_reaction("⬇", client.user)  #Down
     await msg.remove_reaction("➡", client.user)  #Right
     await msg.remove_reaction("🔃", client.user)  #Rotate
+    await msg.remove_reaction("❌", client.user)
     await msg.add_reaction("▶")  #Play
 
 
@@ -434,6 +430,7 @@ async def reset_game():
   next_space_free = True
   points = 0
   lines = 0
+  intents.message_content = False
 
 
 make_empty_board()
@@ -456,7 +453,7 @@ async def test(ctx):
 @client.command()
 async def start(ctx):  #Starts embed
   await reset_game()
-  embed = discord.Embed(title='Tetris in discord!',
+  embed = discord.Embed(title='Tetris but anyone in the server can play it!',
                         description=format_board_as_str(),
                         color=embed_colour)
   embed.add_field(
@@ -479,6 +476,7 @@ async def start(ctx):  #Starts embed
 async def on_reaction_add(reaction, user):
   global h_movement
   global rotation_pos
+  global game_active
   if user != client.user:
     msg = reaction.message
     if str(reaction.emoji) == "▶":  #Play button pressed
@@ -521,13 +519,23 @@ async def on_reaction_add(reaction, user):
         rotation_pos = 0  #go back to original pos
       await msg.remove_reaction("🔃", user)
     if str(reaction.emoji) == "❌":  #Stop game button pressed
-      #In future maybe put score screen here or a message saying stopping.
+      print('GAME OVER')
+      desc = 'Cleaning the screen... \n'.format(
+      points, lines)
+      embed = discord.Embed(title='Thanks for Playing!',
+                            description=desc,
+                            color=embed_colour)
+      await msg.edit(embed=embed)
+      await msg.remove_reaction("⬅", client.user)  #Left
+      await msg.remove_reaction("⬇", client.user)  #Down
+      await msg.remove_reaction("➡", client.user)  #Right
+      await msg.remove_reaction("🔃", client.user)  #Rotate
+      await msg.remove_reaction("❌", client.user) #Stop
+      await msg.edit(embed=embed)
       await reset_game()
       await msg.delete()
     if str(reaction.emoji) == "🔴":
       await msg.edit(content="")
 
 
-client.run(
-  'Discord Token Here.')
-import os
+client.run(DC_TOKEN)
