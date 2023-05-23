@@ -8,7 +8,7 @@ intents = discord.Intents.default()
 intents.typing = False
 intents.presences = False
 intents.message_content = True
-DC_TOKEN = os.getenv('TOKEN')
+DC_TOKEN = os.getenv('token here') #replace token here
 board = []
 num_of_rows = 18
 num_of_cols = 10
@@ -538,4 +538,4 @@ async def on_reaction_add(reaction, user):
       await msg.edit(content="")
 
 
-client.run(DC_TOKEN)
+client.run(DC_TOKEN) #replace token here
